@@ -1,0 +1,105 @@
+cubes:
+  - name: orders
+    title: Orders
+    description: One row per customer order. The single source of truth for revenue, cost and margin.
+    sql_table: analytics.fct_orders
+
+    measures:
+      - name: order_count
+        title: Order Count
+        type: count
+        description: Number of orders.
+
+      - name: units_sold
+        title: Units Sold
+        sql: units
+        type: sum
+        description: Total units across orders.
+
+      - name: revenue
+        title: Revenue
+        sql: revenue
+        type: sum
+        format: currency
+        description: Net revenue = units x unit price x (1 - discount). Matches the official finance report.
+
+      - name: material_cost
+        title: Material Cost
+        sql: material_cost
+        type: sum
+        format: currency
+        description: Cost of materials / goods sold.
+
+      - name: shipping_cost
+        title: Shipping Cost
+        sql: shipping_cost
+        type: sum
+        format: currency
+        description: Freight and logistics cost.
+
+      - name: total_cost
+        title: Total Cost
+        sql: "{material_cost} + {shipping_cost}"
+        type: number
+        format: currency
+        description: Material cost + shipping cost.
+
+      - name: gross_margin
+        title: Gross Margin
+        sql: "{revenue} - {total_cost}"
+        type: number
+        format: currency
+        description: Revenue - total cost, in currency.
+
+      - name: margin_pct
+        title: Gross Margin %
+        sql: "{gross_margin} / NULLIF({revenue}, 0)"
+        type: number
+        format: percent
+        description: The official definition of "margin". Gross margin divided by revenue (a fraction, 0.40 = 40%).
+
+      - name: avg_order_value
+        title: Average Order Value
+        sql: "{revenue} / NULLIF({order_count}, 0)"
+        type: number
+        format: currency
+        description: Revenue divided by order count.
+
+    dimensions:
+      - name: order_id
+        sql: order_id
+        type: string
+        primary_key: true
+
+      - name: order_date
+        title: Order Date
+        sql: order_date
+        type: time
+        description: Order date. Quarters are calendar quarters (Q1 = Jan-Mar).
+
+      - name: region
+        title: Region
+        sql: region
+        type: string
+        description: Sales region - Europe, North America, APAC, LATAM.
+
+      - name: country
+        title: Country
+        sql: country
+        type: string
+
+      - name: product_category
+        title: Product Category
+        sql: product_category
+        type: string
+
+      - name: customer_segment
+        title: Customer Segment
+        sql: customer_segment
+        type: string
+
+      - name: shipping_mode
+        title: Shipping Mode
+        sql: shipping_mode
+        type: string
+        description: Freight mode - Sea, Road or Air. Air is the most expensive.
