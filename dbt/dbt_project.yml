@@ -1,0 +1,34 @@
+name: metricmind
+version: "1.0.0"
+config-version: 2
+profile: metricmind
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+target-path: target
+clean-targets: [target, dbt_packages]
+
+models:
+  metricmind:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
+
+seeds:
+  metricmind:
+    +schema: raw            # lands in <target schema>_raw  ->  analytics_raw
+    raw_orders:
+      +column_types:
+        order_id: varchar(20)
+        order_date: date
+        region: varchar(50)
+        country: varchar(50)
+        product_category: varchar(50)
+        customer_segment: varchar(50)
+        shipping_mode: varchar(20)
+        units: integer
+        unit_price: numeric(12,2)
+        discount_pct: numeric(5,4)
+        material_cost: numeric(14,2)
+        shipping_cost: numeric(14,2)

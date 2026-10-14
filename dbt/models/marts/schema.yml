@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: fct_orders
+    description: One row per order with net revenue and cost components.
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: order_date
+        tests: [not_null]
+      - name: region
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["Europe", "North America", "APAC", "LATAM"]
+      - name: revenue
+        tests: [not_null]
+      - name: shipping_mode
+        tests:
+          - accepted_values:
+              values: ["Sea", "Road", "Air"]
