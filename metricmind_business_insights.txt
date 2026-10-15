@@ -1,0 +1,15 @@
+METRICMIND - BUSINESS INSIGHTS REPORT
+
+Total records analyzed: 12
+Total revenue: 170,000.00
+Total cost: 112,000.00
+Total profit: 58,000.00
+Overall profit margin: 34.12%
+
+Highest-profit region: North America
+Profit: 21,000.00
+
+Lowest-profit region: Europe
+Profit: 18,000.00
+
+Note: Insights describe the supplied dataset and do not establish causes.
