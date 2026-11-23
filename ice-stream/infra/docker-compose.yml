@@ -49,6 +49,7 @@ services:
   iceberg-rest:
     image: tabulario/iceberg-rest:1.6.0
     container_name: iceberg-rest
+    user: "0:0"
     depends_on:
       - minio
     ports:
