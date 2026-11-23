@@ -64,3 +64,38 @@ services:
       CATALOG_URI: jdbc:sqlite:file:/data/catalog.db
     volumes:
       - catalog-data:/data
+  jobmanager:
+    build: ./flink
+    image: ice-stream-flink:1.19
+    container_name: jobmanager
+    command: jobmanager
+    ports:
+      - "8081:8081"
+    environment:
+      AWS_ACCESS_KEY_ID: admin
+      AWS_SECRET_ACCESS_KEY: password
+      AWS_REGION: us-east-1
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        jobmanager.memory.process.size: 1600m
+    volumes:
+      - ../flink-jobs/sql:/opt/sql
+    depends_on:
+      - kafka
+      - iceberg-rest
+
+  taskmanager:
+    build: ./flink
+    image: ice-stream-flink:1.19
+    container_name: taskmanager
+    command: taskmanager
+    depends_on:
+      - jobmanager
+    environment:
+      AWS_ACCESS_KEY_ID: admin
+      AWS_SECRET_ACCESS_KEY: password
+      AWS_REGION: us-east-1
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 4
+        taskmanager.memory.process.size: 2048m
