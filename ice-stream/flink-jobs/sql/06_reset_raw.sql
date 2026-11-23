@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS iceberg.ecommerce.checkout_raw;
