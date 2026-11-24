@@ -1,0 +1,13 @@
+required_fields: [order_id, user_id, tax_amount, total, ts]
+types:
+  order_id: str
+  user_id: int
+  tax_amount: float
+  total: float
+  ts: str
+breaker:
+  error_rate_threshold: 0.02   # 2%
+  window_seconds: 10
+  min_events: 100
+  cooldown_seconds: 15
+  probe_size: 100
