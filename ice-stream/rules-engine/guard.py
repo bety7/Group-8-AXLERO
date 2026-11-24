@@ -21,9 +21,20 @@ def main():
     args = p.parse_args()
 
     rules = load_rules()
+    producer = Producer({"bootstrap.servers": args.bootstrap, "linger.ms": 20})
 
     def on_change(old, new, rate):
-        print(f"[{now_iso()}] BREAKER {old.value} -> {new.value} (error rate {rate:.2%})", flush=True)
+        event = {
+            "type": "breaker",
+            "from": old.value,
+            "to": new.value,
+            "error_rate": round(rate, 4),
+            "at": now_iso(),
+            "reason": f"error rate {rate:.1%} vs threshold {rules['breaker']['error_rate_threshold']:.1%}",
+        }
+        print(f"[{event['at']}] BREAKER {old.value} -> {new.value} (error rate {rate:.2%})", flush=True)
+        producer.produce("breaker-events", json.dumps(event).encode("utf-8"))
+        producer.flush()
 
     breaker = CircuitBreaker.from_config(rules["breaker"], on_change=on_change)
     consumer = Consumer({
@@ -31,7 +42,6 @@ def main():
         "group.id": "ice-guard",
         "auto.offset.reset": "latest",
     })
-    producer = Producer({"bootstrap.servers": args.bootstrap, "linger.ms": 20})
     consumer.subscribe([args.source])
 
     counts = Counter()
