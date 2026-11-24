@@ -26,6 +26,18 @@ class CircuitBreaker:
         self.probe_errors = 0
         self.last_rate = 0.0
 
+    @classmethod
+    def from_config(cls, cfg: dict, **kwargs):
+        """Build a breaker from the `breaker:` section of rules.yaml."""
+        return cls(
+            threshold=cfg["error_rate_threshold"],
+            window_seconds=cfg["window_seconds"],
+            min_events=cfg["min_events"],
+            cooldown_seconds=cfg["cooldown_seconds"],
+            probe_size=cfg["probe_size"],
+            **kwargs,
+        )
+
     def _to(self, new_state, now):
         old = self.state
         self.state = new_state
