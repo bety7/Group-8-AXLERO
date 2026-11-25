@@ -7,6 +7,8 @@ from confluent_kafka import Consumer
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
+import incidents
+
 clients: set = set()
 current = {"state": "CLOSED", "error_rate": 0.0}
 
@@ -23,9 +25,14 @@ async def broadcast(message: dict):
 
 
 def handle_event(event: dict):
-    if event.get("type") == "breaker":
-        current["state"] = event["to"]
-        current["error_rate"] = event.get("error_rate", 0.0)
+    if event.get("type") != "breaker":
+        return
+    current["state"] = event["to"]
+    current["error_rate"] = event.get("error_rate", 0.0)
+    if event["from"] == "CLOSED" and event["to"] == "OPEN":
+        incidents.open_incident(event["at"], event.get("error_rate", 0.0), event.get("reason", ""))
+    elif event["to"] == "CLOSED":
+        incidents.close_incident(event["at"])
 
 
 def kafka_loop(loop):
@@ -49,6 +56,7 @@ def kafka_loop(loop):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    incidents.init()
     loop = asyncio.get_running_loop()
     threading.Thread(target=kafka_loop, args=(loop,), daemon=True).start()
     yield
@@ -61,6 +69,11 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 @app.get("/health")
 def health():
     return {"ok": True, "breaker": current}
+
+
+@app.get("/incidents")
+def get_incidents():
+    return incidents.list_incidents()
 
 
 @app.websocket("/ws")
