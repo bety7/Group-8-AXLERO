@@ -6,3 +6,4 @@ dist/
 .env
 infra/flink/jars/
 .replayed_ids.txt
+incidents.db
