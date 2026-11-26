@@ -7,3 +7,5 @@ dist/
 infra/flink/jars/
 .replayed_ids.txt
 incidents.db
+guard.log
+api.log
