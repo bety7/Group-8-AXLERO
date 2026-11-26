@@ -2,14 +2,15 @@ import { useMemo } from 'react';
 import { ReactFlow, Background, Controls } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import StageNode from './StageNode';
+import IncidentLog from './IncidentLog';
 import { useBreakerSocket } from './useBreakerSocket';
 
 const nodeTypes = { stage: StageNode };
 
 const baseNodes = [
-  { id: 'ingest',  type: 'stage', position: { x: 50,  y: 120 }, data: { label: 'Ingest (Kafka)',  status: 'healthy' } },
-  { id: 'process', type: 'stage', position: { x: 300, y: 120 }, data: { label: 'Process (Flink)', status: 'healthy' } },
-  { id: 'serve',   type: 'stage', position: { x: 550, y: 120 }, data: { label: 'Serve (Iceberg)', status: 'healthy' } },
+  { id: 'ingest',  type: 'stage', position: { x: 50,  y: 80 }, data: { label: 'Ingest (Kafka)',  status: 'healthy' } },
+  { id: 'process', type: 'stage', position: { x: 300, y: 80 }, data: { label: 'Process (Flink)', status: 'healthy' } },
+  { id: 'serve',   type: 'stage', position: { x: 550, y: 80 }, data: { label: 'Serve (Iceberg)', status: 'healthy' } },
 ];
 
 const edges = [
@@ -21,7 +22,7 @@ const PROCESS_STATUS = { CLOSED: 'healthy', HALF_OPEN: 'warning', OPEN: 'quarant
 const SERVE_STATUS   = { CLOSED: 'healthy', HALF_OPEN: 'warning', OPEN: 'warning' };
 
 export default function App() {
-  const { breaker } = useBreakerSocket('ws://localhost:8000/ws');
+  const { breaker, connected } = useBreakerSocket('ws://localhost:8000/ws');
 
   const nodes = useMemo(
     () =>
@@ -34,17 +35,18 @@ export default function App() {
   );
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      <div style={{
-        position: 'absolute', zIndex: 10, top: 12, left: 12, background: '#fff',
-        padding: '8px 12px', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.15)', fontFamily: 'sans-serif',
-      }}>
-        Circuit breaker: <b>{breaker.state}</b> · error rate {(breaker.error_rate * 100).toFixed(1)}%
+    <div className="layout">
+      <div className="canvas">
+        <div className="banner">
+          Circuit breaker: <b>{breaker.state}</b> · error rate {(breaker.error_rate * 100).toFixed(1)}%
+          {!connected && <span className="offline"> · reconnecting…</span>}
+        </div>
+        <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} fitView>
+          <Background />
+          <Controls />
+        </ReactFlow>
       </div>
-      <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} fitView>
-        <Background />
-        <Controls />
-      </ReactFlow>
+      <IncidentLog refreshKey={breaker.state} />
     </div>
   );
 }
